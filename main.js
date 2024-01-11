@@ -1,52 +1,113 @@
+const express = require("express")
+const appService = require("./app.service")
 
-const fs = require('node:fs/promises')
-const path = require('node:path')
+const app = express()
+app.use(express.json());
+app.use(express.urlencoded({extended: true}))
 
-function fileOrFolderNameCreator(count, nameOfFileOrFolder, typeOfFile) {
-    const namesArr = []
-    for (let i = 1; i <= count; i++) {
-        if (typeOfFile) {
-            namesArr.push(nameOfFileOrFolder + i + "." + typeOfFile)
-        } else {
-            namesArr.push(nameOfFileOrFolder + i)
-        }
-    }
-    return namesArr
+app.get("/users", async (req, res) => {
+    const users = await appService.getAllFromCollection()
+    res.json(users)
+})
 
-}
-
-async function makeDirectory(mainFolderName, count, fileName, folderName, typeOfFile) {
-    const fileNameArr = fileOrFolderNameCreator(count,fileName,typeOfFile)
-    const folderNameArr = fileOrFolderNameCreator(count, folderName)
-
-    console.log(fileNameArr, folderNameArr)
-
+app.post("/users", async (req, res) => {
     try {
-        const mainFolder = path.join(__dirname, mainFolderName);
-        const dirCreation = await fs.mkdir(mainFolder, {recursive: true});
+        const {name, age, gender, address} = req.body
+        if (!name || name.length < 2) {
+            throw new Error("Incorrect name")
+        }
+        if (!age || age < 18 || age > 100) {
+            throw new Error("Incorrect age")
+        }
+        if (!gender || gender !== 'female' && gender !== 'male') {
+            throw new Error("Incorrect gender")
+        }
+        if (!address) {
+            throw new Error("Incorrect address")
+        }
+        const users = await appService.getAllFromCollection()
 
-        fileNameArr.map(async (fileName, index) => {
-            const data = new Uint8Array(Buffer.from(`Text in file ${index + 1}`));
-            await fs.writeFile(path.join(mainFolder, fileName), data)
+        const lastId = users[users.length - 1].id
+        const newUser = {id: lastId + 1, name, age, gender, address}
 
-        })
+        users.push(newUser)
+        await appService.saveToCollection(users)
 
-        folderNameArr.map(async (folderName) => {
-            await fs.mkdir(path.join(mainFolder, folderName), {recursive: true})
-        })
-
-        const pathArr = await fs.readdir(mainFolder)
-        console.log(pathArr)
-
-        pathArr.map(async (element, index) => {
-            const status = await fs.stat(path.join(mainFolder, element))
-            console.log(status.isFile() ? `${index + 1} - FILE:` : `${index + 1} - FOLDER:`, element)
-        })
-
+        res.status(201).json(newUser)
     } catch (e) {
-        throw new Error(e.message)
-    }
-}
+        res.status(404).json(e.message)
 
-makeDirectory( "mainFolder",6, "file", "subFolder", "txt").then()
-makeDirectory( "newFolder",4, "element", "elementFolder", "txt").then()
+    }
+})
+
+app.get("/users/:userId", async (req, res) => {
+    try {
+        const {userId} = req.params
+        const users = await appService.getAllFromCollection()
+        const user = users.find(user => user.id === Number(userId))
+        if (!user) {
+            throw new Error("User not found!")
+        }
+        res.json(user)
+    } catch (e) {
+        res.status(404).json(e.message)
+    }
+})
+
+app.put("/users/:userId", async (req, res) => {
+    try {
+        const {userId} = req.params;
+        const {name, age, gender, address} = req.body
+
+        if (!name || name.length < 2) {
+            throw new Error("Incorrect name")
+        }
+        if (!age || age < 18 || age > 100) {
+            throw new Error("Incorrect age")
+        }
+        if(gender || address){
+            throw new Error("Yo can not change 'gender' or 'address'")
+        }
+
+
+        const users = await appService.getAllFromCollection();
+        const user = users.find(user => user.id === Number(userId))
+        if (!user) {
+            throw new Error("User not found!")
+        }
+
+        const updatedUser = {...user, name, age}
+        const indexOfUser = users.findIndex(user => user.id === Number(userId))
+        users.splice(indexOfUser, 1, updatedUser)
+
+        await appService.saveToCollection(users)
+
+        res.status(200).json(updatedUser)
+    } catch (e) {
+        res.status(404).json(e.message)
+    }
+})
+
+app.delete("/users/:userId", async (req, res) => {
+    try {
+        const {userId} = req.params
+        const users = await appService.getAllFromCollection()
+        const user = users.find(user => user.id === Number(userId))
+        if (!user) {
+            throw new Error("User not found!")
+        }
+        const indexOfUser = users.findIndex(user => user.id === Number(userId))
+        users.splice(indexOfUser, 1)
+
+        await appService.saveToCollection(users)
+        res.sendStatus(204)
+    } catch (e) {
+        res.status(404).json(e.message)
+    }
+})
+
+
+const PORT = 5001
+app.listen(PORT, () => {
+    console.log(`App started on PORT - ${PORT}`)
+})
