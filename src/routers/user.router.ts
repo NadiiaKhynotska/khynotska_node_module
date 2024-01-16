@@ -7,13 +7,24 @@ const router = Router();
 
 router.get("", userController.getAll);
 
-router.post("", commonMiddleware.isBodyValid, userController.create);
+router.post(
+  "",
+  commonMiddleware.isBodyValid,
+  commonMiddleware.isEmailUniq,
+  userController.create,
+);
 
-router.get("/:userId", commonMiddleware.isIdValid, userController.getByID);
+router.get(
+  "/:userId",
+  commonMiddleware.isIdValid,
+  commonMiddleware.isUserExist,
+  userController.getByID,
+);
 
 router.put(
   "/:userId",
   commonMiddleware.isIdValid,
+  commonMiddleware.isUserExist,
   commonMiddleware.isUpdateBodyValid,
   userController.updateById,
 );
@@ -21,6 +32,7 @@ router.put(
 router.delete(
   "/:userId",
   commonMiddleware.isIdValid,
+  commonMiddleware.isUserExist,
   userController.deleteById,
 );
 

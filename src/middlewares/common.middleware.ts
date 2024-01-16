@@ -25,6 +25,15 @@ class CommonMiddleware {
       if (!mongoose.isObjectIdOrHexString(userId)) {
         throw new ApiError("Invalid id", 400);
       }
+      next();
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  public async isUserExist(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId } = req.params;
       const user = await userRepository.findById(userId);
       if (!user) {
         throw new ApiError("User not found!", 404);
@@ -45,6 +54,20 @@ class CommonMiddleware {
       next();
     } catch (error) {
       next(error);
+    }
+  }
+
+  public async isEmailUniq(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { email } = req.body;
+      const user = await userRepository.getOneByParams({ email });
+      if (user) {
+      } else {
+        throw new ApiError("Email is olready exist", 409);
+      }
+      next();
+    } catch (e) {
+      next(e);
     }
   }
 }

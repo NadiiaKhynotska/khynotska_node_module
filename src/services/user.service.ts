@@ -1,29 +1,24 @@
-import { ApiError } from "../errors";
 import { userRepository } from "../repositories";
 import { IUser } from "../types";
 
 class UserService {
   public async getAll(): Promise<IUser[]> {
-    const users = await userRepository.getAll();
-    if (!users) {
-      throw new ApiError("Users not found", 404);
-    }
-    return users;
+    return await userRepository.getAll();
   }
 
   public async create(dto: IUser): Promise<IUser> {
-    return await userRepository.crete(dto);
+    return await userRepository.create(dto);
   }
 
   public async findById(userId: string): Promise<IUser> {
     return await userRepository.findById(userId);
   }
 
-  public async updateById(userId: string, dto: Partial<IUser>) {
+  public async updateById(userId: string, dto: Partial<IUser>): Promise<IUser> {
     return await userRepository.updateById(userId, dto);
   }
 
-  public async deleteById(userId: string) {
+  public async deleteById(userId: string): Promise<void> {
     await userRepository.deleteById(userId);
   }
 }
