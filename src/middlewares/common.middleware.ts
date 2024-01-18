@@ -1,22 +1,24 @@
 import { NextFunction, Request, Response } from "express";
+import { ObjectSchema } from "joi";
 import * as mongoose from "mongoose";
 
 import { ApiError } from "../errors";
 import { userRepository } from "../repositories";
-import { UserValidator } from "../validators";
 
 class CommonMiddleware {
-  public isBodyValid(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { error, value } = UserValidator.create.validate(req.body);
-      if (error) {
-        throw new ApiError(error.message, 400);
+  public isBodyValid(validator: ObjectSchema) {
+    return (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const { error, value } = validator.validate(req.body);
+        if (error) {
+          throw new ApiError(error.message, 400);
+        }
+        req.body = value;
+        next();
+      } catch (error) {
+        next(error);
       }
-      console.log(value);
-      next();
-    } catch (error) {
-      next(error);
-    }
+    };
   }
 
   public async isIdValid(req: Request, res: Response, next: NextFunction) {
@@ -44,26 +46,12 @@ class CommonMiddleware {
     }
   }
 
-  public isUpdateBodyValid(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { error, value } = UserValidator.update.validate(req.body);
-      if (error) {
-        throw new ApiError(error.message, 400);
-      }
-      console.log(value);
-      next();
-    } catch (error) {
-      next(error);
-    }
-  }
-
   public async isEmailUniq(req: Request, res: Response, next: NextFunction) {
     try {
       const { email } = req.body;
       const user = await userRepository.getOneByParams({ email });
       if (user) {
-      } else {
-        throw new ApiError("Email is olready exist", 409);
+        throw new ApiError("Email is already exist", 409);
       }
       next();
     } catch (e) {

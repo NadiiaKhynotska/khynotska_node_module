@@ -1,7 +1,7 @@
 import { model, Schema } from "mongoose";
 
 import { ECities, EGenders } from "../enums";
-import {IUser} from "../types";
+import { IUser } from "../types";
 
 const userSchema = new Schema(
   {
@@ -15,7 +15,8 @@ const userSchema = new Schema(
       type: String,
       required: true,
       trim: true,
-      lowercase: true,
+      // lowercase: true,
+      // select: false,
     },
     email: {
       type: String,

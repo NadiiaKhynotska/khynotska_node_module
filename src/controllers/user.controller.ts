@@ -17,19 +17,6 @@ class UserController {
     }
   }
 
-  public async create(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    try {
-      const createdUser = await userService.create(req.body);
-      res.status(201).json(createdUser);
-    } catch (e) {
-      next(e);
-    }
-  }
-
   public async getByID(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await userService.findById(req.params.userId);

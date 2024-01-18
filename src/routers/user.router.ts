@@ -2,17 +2,11 @@ import { Router } from "express";
 
 import { userController } from "../controllers";
 import { commonMiddleware } from "../middlewares";
+import {UserValidator} from "../validators";
 
 const router = Router();
 
 router.get("", userController.getAll);
-
-router.post(
-  "",
-  commonMiddleware.isBodyValid,
-  commonMiddleware.isEmailUniq,
-  userController.create,
-);
 
 router.get(
   "/:userId",
@@ -25,7 +19,7 @@ router.put(
   "/:userId",
   commonMiddleware.isIdValid,
   commonMiddleware.isUserExist,
-  commonMiddleware.isUpdateBodyValid,
+  commonMiddleware.isBodyValid(UserValidator.update),
   userController.updateById,
 );
 
