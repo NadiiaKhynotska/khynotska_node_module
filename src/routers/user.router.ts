@@ -1,7 +1,8 @@
-import { Router } from "express";
+import {Router} from "express";
 
-import { userController } from "../controllers";
-import { commonMiddleware } from "../middlewares";
+import {userController} from "../controllers";
+import {EToken} from "../enums";
+import {authMiddleware, commonMiddleware} from "../middlewares";
 import {UserValidator} from "../validators";
 
 const router = Router();
@@ -17,6 +18,7 @@ router.get(
 
 router.put(
   "/:userId",
+  authMiddleware.checkToken(EToken.AccessToken),
   commonMiddleware.isIdValid,
   commonMiddleware.isUserExist,
   commonMiddleware.isBodyValid(UserValidator.update),

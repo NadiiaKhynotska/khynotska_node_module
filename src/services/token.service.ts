@@ -1,6 +1,8 @@
 import jwt from "jsonwebtoken";
 
 import { configs } from "../configs";
+import { EToken } from "../enums";
+import { ApiError } from "../errors";
 import { ITokenPayload } from "../types";
 
 class TokenService {
@@ -16,6 +18,25 @@ class TokenService {
       accessToken,
       refreshToken,
     };
+  }
+
+  public checkToken(token: string, tokenType: EToken): ITokenPayload {
+
+    try {
+      let secret: string;
+      switch (tokenType) {
+        case EToken.AccessToken:
+          secret = configs.SECRET_ACCESS_KEY;
+          break;
+        case EToken.RefreshToken:
+          secret = configs.SECRET_REFRESH_KEY;
+          break;
+      }
+
+      return jwt.verify(token, secret) as ITokenPayload;
+    } catch (e) {
+      throw new ApiError("Token not valid ", 401);
+    }
   }
 }
 

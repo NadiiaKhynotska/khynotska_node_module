@@ -1,6 +1,4 @@
-import Types from "mongoose";
-
-import { IUser } from "./user.type";
+import { Types } from "mongoose";
 
 export interface ITokensPair {
   accessToken: string;
@@ -10,11 +8,11 @@ export interface ITokensPair {
 export interface ITokenPayload {
   name: string;
   email: string;
-  userId: Types.ObjectId;
+  userId: string;
 }
 
 export interface IToken extends Document {
   accessToken: string;
   refreshToken: string;
-  _userId: Types.ObjectId | IUser;
+  _userId: Types.ObjectId;
 }

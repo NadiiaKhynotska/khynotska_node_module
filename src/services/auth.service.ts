@@ -1,6 +1,8 @@
+import { Types } from "mongoose";
+
 import { ApiError } from "../errors";
 import { tokenRepository, userRepository } from "../repositories";
-import { ITokensPair, IUser, IUserCredentials } from "../types";
+import { ITokenPayload, ITokensPair, IUser, IUserCredentials } from "../types";
 import { passwordService } from "./password.service";
 import { tokenService } from "./token.service";
 
@@ -38,6 +40,26 @@ class AuthService {
     } catch (e) {
       throw new ApiError(e.message, e.status);
     }
+  }
+
+  public async refresh(
+    payload: ITokenPayload,
+    refreshToken: string,
+  ): Promise<ITokensPair> {
+    await tokenRepository.deleteOneByParams({ refreshToken });
+
+    const tokensPair = await tokenService.generateTokensPair({
+      name: payload.name,
+      email: payload.email,
+      userId: payload.userId,
+    });
+
+    await tokenRepository.create({
+      ...tokensPair,
+      _userId: new Types.ObjectId(payload.userId),
+    });
+
+    return tokensPair;
   }
 }
 
