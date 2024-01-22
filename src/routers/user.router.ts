@@ -1,9 +1,9 @@
-import {Router} from "express";
+import { Router } from "express";
 
-import {userController} from "../controllers";
-import {EToken} from "../enums";
-import {authMiddleware, commonMiddleware} from "../middlewares";
-import {UserValidator} from "../validators";
+import { userController } from "../controllers";
+import { EToken } from "../enums";
+import { authMiddleware, commonMiddleware } from "../middlewares";
+import { UserValidator } from "../validators";
 
 const router = Router();
 
