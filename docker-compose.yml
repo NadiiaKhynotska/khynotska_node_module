@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  db_mongo:
+    image: mongo
+    env_file:
+      - .env
+    volumes:
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
+      - ./mongodb:/data/db
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+    restart: on-failure
+
