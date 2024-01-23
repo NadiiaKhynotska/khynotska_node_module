@@ -1,6 +1,10 @@
 import nodemailer from "nodemailer";
+import hbs from "nodemailer-express-handlebars";
+import * as path from "path";
 
 import { configs } from "../configs";
+import { emailTemplate } from "../constants";
+import { EEmailAction } from "../enums";
 
 class EmailService {
   private transporter;
@@ -13,20 +17,42 @@ class EmailService {
         pass: configs.NO_REPLY_PASSWORD,
       },
     });
-    //     const hbsOptions ={
-    //       viewEngine:{
-    // extname: ".hbs",
-    //         defaultLayout:
-    //       }
-    //     }
+    const hbsOptions = {
+      viewEngine: {
+        extname: ".hbs",
+        defaultLayout: "main",
+        layoutsDir: path.join(
+          process.cwd(),
+          "src",
+          "email-templates",
+          "layouts",
+        ),
+        partialsDir: path.join(
+          process.cwd(),
+          "src",
+          "email-templates",
+          "partials",
+        ),
+      },
+      viewPath: path.join(process.cwd(), "src", "email-templates", "views"),
+      extName: ".hbs",
+    };
+    this.transporter.use("compile", hbs(hbsOptions));
   }
 
-  public async sendMail(email: string) {
-    return await this.transporter.sendMail({
+  public async sendMail(
+    email: string | string[],
+    emailAction: EEmailAction,
+    context: Record<string, string | number> = {},
+  ) {
+    const { subject, templateName } = emailTemplate[emailAction];
+    const options = {
       to: email,
-      subject: "First email",
-      html: "<div> Hello first email </div>",
-    });
+      subject,
+      template: templateName,
+      context,
+    };
+    return await this.transporter.sendMail(options);
   }
 }
 

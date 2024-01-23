@@ -1,8 +1,10 @@
 import { Types } from "mongoose";
 
+import { EEmailAction } from "../enums";
 import { ApiError } from "../errors";
 import { tokenRepository, userRepository } from "../repositories";
 import { ITokenPayload, ITokensPair, IUser, IUserCredentials } from "../types";
+import { emailService } from "./email.service";
 import { passwordService } from "./password.service";
 import { tokenService } from "./token.service";
 
@@ -10,7 +12,9 @@ class AuthService {
   public async register(dto: IUser) {
     try {
       dto.password = await passwordService.hash(dto.password);
-
+      await emailService.sendMail("nadinyman@gmail.com", EEmailAction.WELCOME, {
+        name: dto.name,
+      });
       await userRepository.create(dto);
     } catch (e) {
       throw new ApiError(e.message, e.status);
