@@ -69,15 +69,14 @@ app.post("/login", async (req: Request, res: Response) => {
   }
 });
 
-app.get("/users", async (_req: Request, res: Response, _next: NextFunction) => {
-  try {
-    const users = await User.find();
-    console.log(users);
-    res.render("users", { users });
-  } catch (e) {
-    res.redirect("/error");
-  }
-});
+  app.get("/users", async (_req: Request, res: Response, _next: NextFunction) => {
+    try {
+      const users = await User.find();
+      res.render("users", { users });;
+    } catch (e) {
+      res.redirect("/error");
+    }
+  });
 
 app.get("/users/:userId", async (req: Request, res: Response) => {
   try {
