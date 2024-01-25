@@ -3,12 +3,13 @@ import * as mongoose from "mongoose";
 
 import { configs } from "./configs";
 import { ApiError } from "./errors";
-import { authRouter, userRouter } from "./routers";
+import { adminRouter, authRouter, userRouter } from "./routers";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use("/admins", adminRouter);
 app.use("/users", userRouter);
 app.use("/auth", authRouter);
 

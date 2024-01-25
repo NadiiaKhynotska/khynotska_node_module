@@ -1,6 +1,6 @@
 import { Types } from "mongoose";
 
-import { EEmailAction } from "../enums";
+import { EEmailAction, ERoles } from "../enums";
 import { ApiError } from "../errors";
 import { tokenRepository, userRepository } from "../repositories";
 import { ITokenPayload, ITokensPair, IUser, IUserCredentials } from "../types";
@@ -9,13 +9,27 @@ import { passwordService } from "./password.service";
 import { tokenService } from "./token.service";
 
 class AuthService {
+  public async registerAdmin(dto: IUser): Promise<IUser> {
+    try {
+      dto.password = await passwordService.hash(dto.password);
+      await emailService.sendMail("nadinyman@gmail.com", EEmailAction.WELCOME, {
+        name: dto.name,
+      });
+
+      dto.role = ERoles.ADMIN;
+      return await userRepository.create(dto);
+    } catch (e) {
+      throw new ApiError(e.message, e.status);
+    }
+  }
+
   public async register(dto: IUser) {
     try {
       dto.password = await passwordService.hash(dto.password);
       await emailService.sendMail("nadinyman@gmail.com", EEmailAction.WELCOME, {
         name: dto.name,
       });
-      await userRepository.create(dto);
+      return await userRepository.create(dto);
     } catch (e) {
       throw new ApiError(e.message, e.status);
     }
@@ -32,11 +46,15 @@ class AuthService {
       );
       if (!isMatch) throw new ApiError("Invalid credentials", 401);
 
-      const tokensPair = tokenService.generateTokensPair({
-        name: user.name,
-        email: user.email,
-        userId: user._id,
-      });
+      const tokensPair = tokenService.generateTokensPair(
+        {
+          name: user.name,
+          email: user.email,
+          userId: user._id,
+          role: user.role,
+        },
+        user.role,
+      );
 
       await tokenRepository.create({ ...tokensPair, _userId: user._id });
 
@@ -52,11 +70,15 @@ class AuthService {
   ): Promise<ITokensPair> {
     await tokenRepository.deleteOneByParams({ refreshToken });
 
-    const tokensPair = await tokenService.generateTokensPair({
-      name: payload.name,
-      email: payload.email,
-      userId: payload.userId,
-    });
+    const tokensPair = await tokenService.generateTokensPair(
+      {
+        name: payload.name,
+        email: payload.email,
+        userId: payload.userId,
+        role: payload.role,
+      },
+      payload.role,
+    );
 
     await tokenRepository.create({
       ...tokensPair,

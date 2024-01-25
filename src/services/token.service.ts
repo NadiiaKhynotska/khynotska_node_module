@@ -1,17 +1,36 @@
 import jwt from "jsonwebtoken";
 
 import { configs } from "../configs";
-import { EToken } from "../enums";
+import { ERoles, EToken } from "../enums";
 import { ApiError } from "../errors";
 import { ITokenPayload } from "../types";
 
 class TokenService {
-  public generateTokensPair(payload: ITokenPayload) {
-    const accessToken = jwt.sign(payload, configs.SECRET_ACCESS_KEY, {
-      expiresIn: "1d",
+  public generateTokensPair(payload: ITokenPayload, role: ERoles) {
+    let accessTokenSecret: string;
+    let accessExpiresIn: string;
+    let refreshTokenSecret: string;
+    let refreshExpiresIn: string;
+
+    switch (role) {
+      case ERoles.USER:
+        accessTokenSecret = configs.SECRET_USER_ACCESS_KEY;
+        accessExpiresIn = configs.JWT_USER_ACCESS_EXPIRES_IN;
+        refreshTokenSecret = configs.SECRET_USER_REFRESH_KEY;
+        refreshExpiresIn = configs.JWT_USER_REFRESH_EXPIRES_IN;
+        break;
+      case ERoles.ADMIN:
+        accessTokenSecret = configs.SECRET_ADMIN_ACCESS_KEY;
+        accessExpiresIn = configs.JWT_ADMIN_REFRESH_EXPIRES_IN;
+        refreshTokenSecret = configs.SECRET_ADMIN_REFRESH_KEY;
+        refreshExpiresIn = configs.JWT_ADMIN_REFRESH_EXPIRES_IN;
+        break;
+    }
+    const accessToken = jwt.sign(payload, accessTokenSecret, {
+      expiresIn: accessExpiresIn,
     });
-    const refreshToken = jwt.sign(payload, configs.SECRET_REFRESH_KEY, {
-      expiresIn: "30d",
+    const refreshToken = jwt.sign(payload, refreshTokenSecret, {
+      expiresIn: refreshExpiresIn,
     });
 
     return {
@@ -20,22 +39,30 @@ class TokenService {
     };
   }
 
-  public checkToken(token: string, tokenType: EToken): ITokenPayload {
-
+  public checkToken(
+    token: string,
+    tokenType: EToken,
+    role: ERoles,
+  ): ITokenPayload {
     try {
       let secret: string;
-      switch (tokenType) {
-        case EToken.AccessToken:
-          secret = configs.SECRET_ACCESS_KEY;
-          break;
-        case EToken.RefreshToken:
-          secret = configs.SECRET_REFRESH_KEY;
-          break;
+      if (tokenType === EToken.AccessToken) {
+        if (role === ERoles.USER) {
+          secret = configs.SECRET_USER_ACCESS_KEY;
+        } else if (role === ERoles.ADMIN) {
+          secret = configs.SECRET_ADMIN_ACCESS_KEY;
+        }
+      } else if (tokenType === EToken.RefreshToken) {
+        if (role === ERoles.USER) {
+          secret = configs.SECRET_USER_REFRESH_KEY;
+        } else if (role === ERoles.ADMIN) {
+          secret = configs.SECRET_ADMIN_REFRESH_KEY;
+        }
       }
 
       return jwt.verify(token, secret) as ITokenPayload;
     } catch (e) {
-      throw new ApiError("Token not valid ", 401);
+      throw new ApiError("Token not valid !!!!", 401);
     }
   }
 }

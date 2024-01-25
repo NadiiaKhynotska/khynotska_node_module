@@ -8,6 +8,12 @@ import { UserValidator } from "../validators";
 const router = Router();
 
 router.post(
+  "/admin/register",
+  commonMiddleware.isBodyValid(UserValidator.create),
+  commonMiddleware.isEmailUniq,
+  authController.registerAdmin,
+);
+router.post(
   "/register",
   commonMiddleware.isBodyValid(UserValidator.create),
   commonMiddleware.isEmailUniq,
@@ -23,4 +29,5 @@ router.post(
   authMiddleware.checkToken(EToken.RefreshToken),
   authController.refresh,
 );
+
 export const authRouter = router;

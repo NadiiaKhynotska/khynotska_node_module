@@ -1,8 +1,22 @@
 import { NextFunction, Request, Response } from "express";
+
 import { authService } from "../services";
 import { ITokenPayload, ITokensPair } from "../types";
 
 class AuthController {
+  public async registerAdmin(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response<void>> {
+    try {
+      const dto = req.body;
+      const createdAdmin = await authService.registerAdmin(dto);
+      return res.json({ data: createdAdmin }).status(201);
+    } catch (e) {
+      next(e);
+    }
+  }
   public async register(
     req: Request,
     res: Response,
@@ -10,8 +24,8 @@ class AuthController {
   ): Promise<Response<void>> {
     try {
       const dto = req.body;
-      await authService.register(dto);
-      return res.sendStatus(201);
+      const createdUser = await authService.register(dto);
+      return res.json({ data: createdUser });
     } catch (e) {
       next(e);
     }

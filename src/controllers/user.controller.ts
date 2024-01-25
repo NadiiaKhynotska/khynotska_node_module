@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 
+import { ERoles } from "../enums";
 import { userService } from "../services";
 import { IUser } from "../types";
 
@@ -12,7 +13,9 @@ class UserController {
     try {
       const users = await userService.getAll();
 
-      return res.json(users);
+      const allowedUsers = users.filter((user) => user.role === ERoles.USER);
+
+      return res.json(allowedUsers);
     } catch (e) {
       next(e);
     }
