@@ -12,12 +12,33 @@ class AuthService {
   public async registerAdmin(dto: IUser): Promise<IUser> {
     try {
       dto.password = await passwordService.hash(dto.password);
-      await emailService.sendMail("nadinyman@gmail.com", EEmailAction.WELCOME, {
-        name: dto.name,
-      });
-
       dto.role = ERoles.ADMIN;
-      return await userRepository.create(dto);
+      const createdAdmin = await userRepository.create(dto);
+
+      const actionToken = tokenService.generateActionToken(
+        {
+          role: createdAdmin.role,
+          userId: createdAdmin._id,
+          email: createdAdmin.email,
+          name: createdAdmin.name,
+        },
+        EToken.Activate,
+      );
+
+      await Promise.all([
+        tokenRepository.createActionToken({
+          actionToken,
+          tokenType: EToken.Activate,
+          _userId: createdAdmin._id,
+        }),
+
+        emailService.sendMail("nadinyman@gmail.com", EEmailAction.WELCOME, {
+          name: createdAdmin.name,
+          actionToken,
+        }),
+      ]);
+
+      return createdAdmin;
     } catch (e) {
       throw new ApiError(e.message, e.status);
     }
@@ -26,10 +47,32 @@ class AuthService {
   public async register(dto: IUser) {
     try {
       dto.password = await passwordService.hash(dto.password);
-      await emailService.sendMail("nadinyman@gmail.com", EEmailAction.WELCOME, {
-        name: dto.name,
-      });
-      return await userRepository.create(dto);
+      const createdUser = await userRepository.create(dto);
+
+      const actionToken = tokenService.generateActionToken(
+        {
+          role: createdUser.role,
+          userId: createdUser._id,
+          email: createdUser.email,
+          name: createdUser.name,
+        },
+        EToken.Activate,
+      );
+
+      await Promise.all([
+        tokenRepository.createActionToken({
+          actionToken,
+          tokenType: EToken.Activate,
+          _userId: createdUser._id,
+        }),
+
+        emailService.sendMail("nadinyman@gmail.com", EEmailAction.WELCOME, {
+          name: createdUser.name,
+          actionToken,
+        }),
+      ]);
+
+      return createdUser;
     } catch (e) {
       throw new ApiError(e.message, e.status);
     }
@@ -45,6 +88,10 @@ class AuthService {
         user.password,
       );
       if (!isMatch) throw new ApiError("Invalid credentials", 401);
+
+      if (!user.isActive) {
+        throw new ApiError("You need activate your account", 403);
+      }
 
       const tokensPair = tokenService.generateTokensPair(
         {
@@ -94,7 +141,7 @@ class AuthService {
       EToken.ForgotPassword,
     );
 
-    Promise.all([
+    await Promise.all([
       tokenRepository.createActionToken({
         actionToken,
         tokenType: EToken.ForgotPassword,
@@ -118,6 +165,19 @@ class AuthService {
       await Promise.all([
         userRepository.updateById(jwtPayload.userId, {
           password: newHashedPassword,
+        }),
+        tokenRepository.deleteActionTokenByParams({ actionToken }),
+      ]);
+    } catch (e) {
+      throw new ApiError(e.message, e.status);
+    }
+  }
+
+  public async activate(jwtPayload: ITokenPayload, actionToken: string) {
+    try {
+      await Promise.all([
+        userRepository.updateById(jwtPayload.userId, {
+          isActive: true,
         }),
         tokenRepository.deleteActionTokenByParams({ actionToken }),
       ]);

@@ -34,6 +34,10 @@ const userSchema = new Schema(
       enum: ERoles,
       default: ERoles.USER,
     },
+    isActive: {
+      type: Boolean,
+      default: false,
+    },
     address: {
       type: String,
       enum: ECities,

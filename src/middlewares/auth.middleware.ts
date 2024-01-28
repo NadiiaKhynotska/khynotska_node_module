@@ -51,6 +51,11 @@ class AuthMiddleware {
               actionToken,
             });
             break;
+          case EToken.Activate:
+            entity = await tokenRepository.getOneActionTokenBy({
+              actionToken,
+            });
+            break;
           default:
             throw new ApiError("Token not valid", 401);
         }

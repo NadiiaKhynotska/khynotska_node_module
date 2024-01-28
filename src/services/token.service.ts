@@ -48,6 +48,11 @@ class TokenService {
         case EToken.ForgotPassword:
           actionTokenSecret = configs.SECRET_ACTION_KEY;
           break;
+        case EToken.Activate:
+          actionTokenSecret = configs.SECRET_ACTIVATE_ACTION_KEY;
+          break;
+        default:
+          throw new ApiError("create Action Token error", 500);
       }
       const actionToken = jwt.sign(payload, actionTokenSecret, {
         expiresIn: actionTokenExpiresIn,
@@ -80,8 +85,11 @@ class TokenService {
         if (role === ERoles.USER || role === ERoles.ADMIN) {
           secret = configs.SECRET_ACTION_KEY;
         }
+      } else if (tokenType === EToken.Activate) {
+        if (role === ERoles.USER || role === ERoles.ADMIN) {
+          secret = configs.SECRET_ACTIVATE_ACTION_KEY;
+        }
       }
-
       return jwt.verify(token, secret) as ITokenPayload;
     } catch (e) {
       throw new ApiError("Token not valid !!!!", 401);

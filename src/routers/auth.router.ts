@@ -1,9 +1,9 @@
-import {Router} from "express";
+import { Router } from "express";
 
-import {authController} from "../controllers";
-import {EToken} from "../enums";
-import {authMiddleware, commonMiddleware} from "../middlewares";
-import {UserValidator} from "../validators";
+import { authController } from "../controllers";
+import { EToken } from "../enums";
+import { authMiddleware, commonMiddleware } from "../middlewares";
+import { UserValidator } from "../validators";
 
 const router = Router();
 
@@ -40,6 +40,12 @@ router.put(
   commonMiddleware.isBodyValid(UserValidator.setForgotPassword),
   authMiddleware.checkActionToken(EToken.ForgotPassword),
   authController.setForgotPassword,
+);
+
+router.put(
+  "/activate/:token",
+  authMiddleware.checkActionToken(EToken.Activate),
+  authController.activate,
 );
 
 export const authRouter = router;

@@ -93,6 +93,19 @@ class AuthController {
       next(e);
     }
   }
+
+  public async activate(req: Request, res: Response, next: NextFunction) {
+    try {
+      const jwtPayload = req.res.locals.jwtPayload;
+      const actionToken = req.res.locals.actionToken;
+
+      await authService.activate(jwtPayload, actionToken);
+
+      res.json("Ok");
+    } catch (e) {
+      next(e);
+    }
+  }
 }
 
 export const authController = new AuthController();
