@@ -1,6 +1,6 @@
 import { Types } from "mongoose";
 
-import { ERoles } from "../enums";
+import {ERoles, EToken} from "../enums";
 
 export interface ITokensPair {
   accessToken: string;
@@ -17,5 +17,11 @@ export interface ITokenPayload {
 export interface IToken extends Document {
   accessToken: string;
   refreshToken: string;
+  _userId: Types.ObjectId;
+}
+
+export interface IActionToken extends Document {
+  actionToken: string;
+  tokenType: EToken;
   _userId: Types.ObjectId;
 }

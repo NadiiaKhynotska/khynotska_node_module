@@ -4,6 +4,7 @@ import * as mongoose from "mongoose";
 
 import { ApiError } from "../errors";
 import { userRepository } from "../repositories";
+import { IUser } from "../types";
 
 class CommonMiddleware {
   public isBodyValid(validator: ObjectSchema) {
@@ -33,17 +34,21 @@ class CommonMiddleware {
     }
   }
 
-  public async isUserExist(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { userId } = req.params;
-      const user = await userRepository.findById(userId);
-      if (!user) {
-        throw new ApiError("User not found!", 404);
+  public isUserExist(param: keyof IUser) {
+    return async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const user = await userRepository.getOneByParams({
+          [param]: req.body[param],
+        });
+        if (!user) {
+          throw new ApiError("User not found!", 404);
+        }
+        req.res.locals = user;
+        next();
+      } catch (e) {
+        next(e);
       }
-      next();
-    } catch (e) {
-      next(e);
-    }
+    };
   }
 
   public async isEmailUniq(req: Request, res: Response, next: NextFunction) {

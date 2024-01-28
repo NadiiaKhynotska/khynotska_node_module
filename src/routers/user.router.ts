@@ -12,7 +12,7 @@ router.get("", userController.getAll);
 router.get(
   "/:userId",
   commonMiddleware.isIdValid,
-  commonMiddleware.isUserExist,
+  commonMiddleware.isUserExist("_id"),
   userController.getByID,
 );
 
@@ -20,7 +20,7 @@ router.put(
   "/:userId",
   authMiddleware.checkToken(EToken.AccessToken),
   commonMiddleware.isIdValid,
-  commonMiddleware.isUserExist,
+  commonMiddleware.isUserExist("_id"),
   commonMiddleware.isBodyValid(UserValidator.update),
   userController.updateById,
 );
@@ -28,7 +28,7 @@ router.put(
 router.delete(
   "/:userId",
   commonMiddleware.isIdValid,
-  commonMiddleware.isUserExist,
+  commonMiddleware.isUserExist("_id"),
   userController.deleteById,
 );
 

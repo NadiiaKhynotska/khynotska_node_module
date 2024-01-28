@@ -7,3 +7,6 @@ An example of writing an application using the Express library
 
 ### Starting script
 >npm run start
+
+### Connecting to DB
+>docker compose up

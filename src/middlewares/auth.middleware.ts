@@ -21,6 +21,7 @@ class AuthMiddleware {
             ? { accessToken: token }
             : { refreshToken: token },
         );
+
         if (!entity) {
           throw new ApiError("Token not valid", 401);
         }
@@ -38,6 +39,42 @@ class AuthMiddleware {
       }
     };
   }
-}
 
+  public checkActionToken(tokenType: EToken) {
+    return async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const actionToken = req.params.token;
+        let entity;
+        switch (tokenType) {
+          case EToken.ForgotPassword:
+            entity = await tokenRepository.getOneActionTokenBy({
+              actionToken,
+            });
+            break;
+          default:
+            throw new ApiError("Token not valid", 401);
+        }
+
+        if (!entity) {
+          throw new ApiError("Token not valid", 401);
+        }
+        const user = await userRepository.getOneByParams({
+          _id: entity._userId,
+        });
+
+        const jwtPayload = tokenService.checkToken(
+          actionToken,
+          tokenType,
+          user.role,
+        );
+
+        req.res.locals.jwtPayload = jwtPayload;
+        req.res.locals.actionToken = actionToken;
+        next();
+      } catch (error) {
+        next(error);
+      }
+    };
+  }
+}
 export const authMiddleware = new AuthMiddleware();

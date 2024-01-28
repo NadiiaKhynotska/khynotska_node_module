@@ -2,11 +2,11 @@ import { EEmailAction } from "../enums";
 
 export const emailTemplate = {
   [EEmailAction.WELCOME]: {
-    templateName: "Welcome",
+    templateName: "welcome",
     subject: "Glad to see you in our super duper app !!!!👋",
   },
-  [EEmailAction.FORGOT]: {
-    templateName: "Forgot password",
+  [EEmailAction.FORGOT_PASSWORD]: {
+    templateName: "forgot-password",
     subject: "Do not worry we kip your email under control !!!!🫡",
   },
 };

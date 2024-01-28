@@ -1,4 +1,4 @@
 export enum EEmailAction {
   WELCOME,
-  FORGOT,
+  FORGOT_PASSWORD,
 }

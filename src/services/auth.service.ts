@@ -1,6 +1,6 @@
 import { Types } from "mongoose";
 
-import { EEmailAction, ERoles } from "../enums";
+import { EEmailAction, ERoles, EToken } from "../enums";
 import { ApiError } from "../errors";
 import { tokenRepository, userRepository } from "../repositories";
 import { ITokenPayload, ITokensPair, IUser, IUserCredentials } from "../types";
@@ -70,7 +70,7 @@ class AuthService {
   ): Promise<ITokensPair> {
     await tokenRepository.deleteOneByParams({ refreshToken });
 
-    const tokensPair = await tokenService.generateTokensPair(
+    const tokensPair = tokenService.generateTokensPair(
       {
         name: payload.name,
         email: payload.email,
@@ -86,6 +86,44 @@ class AuthService {
     });
 
     return tokensPair;
+  }
+
+  public async forgotPassword(user: IUser) {
+    const actionToken = tokenService.generateActionToken(
+      { role: user.role, userId: user._id, email: user.email, name: user.name },
+      EToken.ForgotPassword,
+    );
+
+    Promise.all([
+      tokenRepository.createActionToken({
+        actionToken,
+        tokenType: EToken.ForgotPassword,
+        _userId: user._id,
+      }),
+
+      emailService.sendMail(user.email, EEmailAction.FORGOT_PASSWORD, {
+        name: user.name,
+        actionToken,
+      }),
+    ]);
+  }
+
+  public async setForgotPassword(
+    newPassword: string,
+    jwtPayload: ITokenPayload,
+    actionToken: string,
+  ) {
+    try {
+      const newHashedPassword = await passwordService.hash(newPassword);
+      await Promise.all([
+        userRepository.updateById(jwtPayload.userId, {
+          password: newHashedPassword,
+        }),
+        tokenRepository.deleteActionTokenByParams({ actionToken }),
+      ]);
+    } catch (e) {
+      throw new ApiError(e.message, e.status);
+    }
   }
 }
 

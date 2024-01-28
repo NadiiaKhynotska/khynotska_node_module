@@ -39,6 +39,24 @@ class TokenService {
     };
   }
 
+  public generateActionToken(payload: ITokenPayload, tokenType: EToken) {
+    try {
+      let actionTokenSecret: string;
+      const actionTokenExpiresIn = configs.JWT_ACTION_TOKEN_EXPIRES_IN;
+
+      switch (tokenType) {
+        case EToken.ForgotPassword:
+          actionTokenSecret = configs.SECRET_ACTION_KEY;
+          break;
+      }
+      const actionToken = jwt.sign(payload, actionTokenSecret, {
+        expiresIn: actionTokenExpiresIn,
+      });
+
+      return actionToken;
+    } catch (e) {}
+  }
+
   public checkToken(
     token: string,
     tokenType: EToken,
@@ -57,6 +75,10 @@ class TokenService {
           secret = configs.SECRET_USER_REFRESH_KEY;
         } else if (role === ERoles.ADMIN) {
           secret = configs.SECRET_ADMIN_REFRESH_KEY;
+        }
+      } else if (tokenType === EToken.ForgotPassword) {
+        if (role === ERoles.USER || role === ERoles.ADMIN) {
+          secret = configs.SECRET_ACTION_KEY;
         }
       }
 

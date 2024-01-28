@@ -1,9 +1,9 @@
-import { Router } from "express";
+import {Router} from "express";
 
-import { authController } from "../controllers";
-import { EToken } from "../enums";
-import { authMiddleware, commonMiddleware } from "../middlewares";
-import { UserValidator } from "../validators";
+import {authController} from "../controllers";
+import {EToken} from "../enums";
+import {authMiddleware, commonMiddleware} from "../middlewares";
+import {UserValidator} from "../validators";
 
 const router = Router();
 
@@ -28,6 +28,18 @@ router.post(
   "/refresh",
   authMiddleware.checkToken(EToken.RefreshToken),
   authController.refresh,
+);
+router.post(
+  "/forgot-password",
+  commonMiddleware.isBodyValid(UserValidator.forgotPassword),
+  commonMiddleware.isUserExist("email"),
+  authController.forgotPassword,
+);
+router.put(
+  "/forgot-password/:token",
+  commonMiddleware.isBodyValid(UserValidator.setForgotPassword),
+  authMiddleware.checkActionToken(EToken.ForgotPassword),
+  authController.setForgotPassword,
 );
 
 export const authRouter = router;
