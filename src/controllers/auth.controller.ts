@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 
 import { authService } from "../services";
-import { ITokenPayload, ITokensPair, IUser } from "../types";
+import { IChangePassword, ITokenPayload, ITokensPair, IUser } from "../types";
 
 class AuthController {
   public async registerAdmin(
@@ -88,7 +88,7 @@ class AuthController {
 
       await authService.setForgotPassword(newPassword, jwtPayload, actionToken);
 
-      res.json("Ok");
+      res.sendStatus(201);
     } catch (e) {
       next(e);
     }
@@ -101,7 +101,20 @@ class AuthController {
 
       await authService.activate(jwtPayload, actionToken);
 
-      res.json("Ok");
+      res.sendStatus(201);
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  public async changePassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const jwtPayload = req.res.locals.jwtPayload;
+      const dto = req.body as IChangePassword;
+
+      await authService.changePassword(jwtPayload, dto);
+
+      res.sendStatus(201);
     } catch (e) {
       next(e);
     }

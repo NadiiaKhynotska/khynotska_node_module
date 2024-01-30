@@ -1,3 +1,5 @@
+import { FilterQuery } from "mongoose";
+
 import { ActionToken, Token } from "../models";
 import { IActionToken, IToken } from "../types";
 
@@ -8,6 +10,9 @@ class TokenRepository {
 
   public async getOneBy(param: Partial<IToken>): Promise<IToken> {
     return await Token.findOne(param);
+  }
+  public async getManyByParams(param: FilterQuery<IToken>): Promise<IToken[]> {
+    return await Token.find(param);
   }
 
   public async getOneActionTokenBy(
@@ -30,6 +35,10 @@ class TokenRepository {
     params: Partial<IActionToken>,
   ): Promise<void> {
     await ActionToken.deleteOne(params);
+  }
+
+  public async deleteManyByParams(params: FilterQuery<IToken>): Promise<void> {
+    await ActionToken.deleteMany(params);
   }
 }
 

@@ -4,6 +4,7 @@ import * as mongoose from "mongoose";
 import { configs } from "./configs";
 import { ApiError } from "./errors";
 import { adminRouter, authRouter, userRouter } from "./routers";
+import {runAllCronJobs} from "./crons";
 
 const app = express();
 app.use(express.json());
@@ -20,5 +21,6 @@ app.use((err: ApiError, req: Request, res: Response, next: NextFunction) => {
 
 app.listen(configs.PORT, async () => {
   await mongoose.connect(configs.DB_URI);
+  runAllCronJobs();
   console.log(`App started on PORT - ${configs.PORT}`);
 });

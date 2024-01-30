@@ -48,4 +48,11 @@ router.put(
   authController.activate,
 );
 
+router.put(
+  "/change-password",
+  commonMiddleware.isBodyValid(UserValidator.changePassword),
+  authMiddleware.checkToken(EToken.AccessToken),
+  authController.changePassword,
+);
+
 export const authRouter = router;

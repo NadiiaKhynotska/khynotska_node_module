@@ -3,7 +3,13 @@ import { Types } from "mongoose";
 import { EEmailAction, ERoles, EToken } from "../enums";
 import { ApiError } from "../errors";
 import { tokenRepository, userRepository } from "../repositories";
-import { ITokenPayload, ITokensPair, IUser, IUserCredentials } from "../types";
+import {
+  IChangePassword,
+  ITokenPayload,
+  ITokensPair,
+  IUser,
+  IUserCredentials,
+} from "../types";
 import { emailService } from "./email.service";
 import { passwordService } from "./password.service";
 import { tokenService } from "./token.service";
@@ -181,6 +187,32 @@ class AuthService {
         }),
         tokenRepository.deleteActionTokenByParams({ actionToken }),
       ]);
+    } catch (e) {
+      throw new ApiError(e.message, e.status);
+    }
+  }
+
+  public async changePassword(jwtPayload: ITokenPayload, dto: IChangePassword) {
+    try {
+      const user = await userRepository.getOneByParams({
+        _id: jwtPayload.userId,
+      });
+      if (!user) {
+        throw new ApiError("User not found", 404);
+      }
+      const isMatch = await passwordService.compare(
+        dto.oldPassword,
+        user.password,
+      );
+      if (!isMatch) {
+        throw new ApiError("You provided wrong password", 400);
+      }
+
+      const newHashedPassword = await passwordService.hash(dto.newPassword);
+
+      await userRepository.updateById(user._id, {
+        password: newHashedPassword,
+      });
     } catch (e) {
       throw new ApiError(e.message, e.status);
     }
