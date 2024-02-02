@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 
+import { UserPresenter } from "../presenters";
 import { authService } from "../services";
 import { IChangePassword, ITokenPayload, ITokensPair, IUser } from "../types";
 
@@ -12,7 +13,9 @@ class AuthController {
     try {
       const dto = req.body;
       const createdAdmin = await authService.registerAdmin(dto);
-      return res.json({ data: createdAdmin }).status(201);
+      return res
+        .json({ data: UserPresenter.userToResponse(createdAdmin) })
+        .status(201);
     } catch (e) {
       next(e);
     }
@@ -25,7 +28,7 @@ class AuthController {
     try {
       const dto = req.body;
       const createdUser = await authService.register(dto);
-      return res.json({ data: createdUser });
+      return res.json({ data: UserPresenter.userToResponse(createdUser) });
     } catch (e) {
       next(e);
     }
@@ -66,12 +69,12 @@ class AuthController {
     req: Request,
     res: Response,
     next: NextFunction,
-  ): Promise<boolean> {
+  ): Promise<void> {
     try {
       const user = req.res.locals as IUser;
 
       await authService.forgotPassword(user);
-      return true;
+      res.sendStatus(200);
     } catch (e) {
       next(e);
     }

@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from "express";
 import { ERoles } from "../enums";
 import { userService } from "../services";
 import { IUser } from "../types";
+import {UserPresenter} from "../presenters";
 
 class UserController {
   public async getAll(
@@ -15,7 +16,7 @@ class UserController {
 
       const allowedUsers = users.filter((user) => user.role === ERoles.USER);
 
-      return res.json(allowedUsers);
+      return res.json(UserPresenter.usersToResponse(allowedUsers));
     } catch (e) {
       next(e);
     }
@@ -24,7 +25,7 @@ class UserController {
   public async getByID(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await userService.findById(req.params.userId);
-      res.json(user);
+      res.json(UserPresenter.userToResponse(user));
     } catch (e) {
       next(e.message);
     }
@@ -33,7 +34,7 @@ class UserController {
   public async updateById(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await userService.updateById(req.params.userId, req.body);
-      res.status(201).json(user);
+      res.status(201).json(UserPresenter.userToResponse(user));
     } catch (e) {
       next(e);
     }

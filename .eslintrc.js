@@ -21,6 +21,8 @@ module.exports = {
         jest: true,
     },
     rules: {
+        // "max-len": ["error", { code: 120 }],
+        // "prettier/prettier": ["error", { printWidth: 120 }],
         '@typescript-eslint/return-await': ['error', 'always'],
         '@typescript-eslint/no-unused-vars': ['error', {
             argsIgnorePattern: 'req|res|next'

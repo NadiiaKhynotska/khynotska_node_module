@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 
 import { ERoles } from "../enums";
+import { UserPresenter } from "../presenters";
 import { userService } from "../services";
 import { IUser } from "../types";
 
@@ -15,7 +16,7 @@ class AdminController {
 
       const admins = users.filter((user) => user.role === ERoles.ADMIN);
 
-      return res.json(admins);
+      return res.json(UserPresenter.usersToResponse(admins));
     } catch (e) {
       next(e);
     }
