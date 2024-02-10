@@ -3,20 +3,23 @@ import { NextFunction, Request, Response } from "express";
 import { ERoles } from "../enums";
 import { UserPresenter } from "../presenters";
 import { userService } from "../services";
-import { IUser } from "../types";
+import { IQuery } from "../types";
 
 class AdminController {
-  public async getAdmins(
-    _req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<Response<IUser[]>> {
+  public async getAdmins(req: Request, res: Response, next: NextFunction) {
     try {
-      const users = await userService.getAll();
+      const paginatedUsers = await userService.getAllWithPagination(
+        req.query as IQuery,
+      );
 
-      const admins = users.filter((user) => user.role === ERoles.ADMIN);
+      const admins = paginatedUsers.data.filter(
+        (user) => user.role === ERoles.ADMIN,
+      );
 
-      return res.json(UserPresenter.usersToResponse(admins));
+      return res.json({
+        ...paginatedUsers,
+        data: UserPresenter.usersToResponse(admins),
+      });
     } catch (e) {
       next(e);
     }

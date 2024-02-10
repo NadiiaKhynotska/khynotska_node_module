@@ -1,22 +1,29 @@
 import { NextFunction, Request, Response } from "express";
 
 import { ERoles } from "../enums";
+import { UserPresenter } from "../presenters";
 import { userService } from "../services";
-import { IUser } from "../types";
-import {UserPresenter} from "../presenters";
+import { IQuery, IUser } from "../types";
 
 class UserController {
-  public async getAll(
-    _req: Request,
+  public async getAllWithPagination(
+    req: Request,
     res: Response,
     next: NextFunction,
   ): Promise<Response<IUser[]>> {
     try {
-      const users = await userService.getAll();
+      const paginatedUsers = await userService.getAllWithPagination(
+        req.query as IQuery,
+      );
 
-      const allowedUsers = users.filter((user) => user.role === ERoles.USER);
+      const allowedUsers = paginatedUsers.data.filter(
+        (user) => user.role === ERoles.USER,
+      );
 
-      return res.json(UserPresenter.usersToResponse(allowedUsers));
+      return res.json({
+        ...paginatedUsers,
+        data: UserPresenter.usersToResponse(allowedUsers),
+      });
     } catch (e) {
       next(e);
     }

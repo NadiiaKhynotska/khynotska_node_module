@@ -1,9 +1,16 @@
 import { userRepository } from "../repositories";
-import { IUser } from "../types";
+import { IPaginationResponse, IQuery, IUser } from "../types";
 
 class UserService {
-  public async getAll(): Promise<IUser[]> {
-    return await userRepository.getAll();
+  public async getAllWithPagination(
+    query: IQuery,
+  ): Promise<IPaginationResponse<IUser>> {
+    const queryString = JSON.stringify(query);
+    const queryObj = JSON.parse(
+      queryString.replace(/\b(gte|lte|gt|lt)\b/, (match) => `$${match}`),
+    );
+
+    return await userRepository.getAllWithPagination(queryObj);
   }
 
   public async create(dto: IUser): Promise<IUser> {

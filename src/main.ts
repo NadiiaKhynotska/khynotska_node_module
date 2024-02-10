@@ -2,17 +2,37 @@ import express, { NextFunction, Request, Response } from "express";
 import * as mongoose from "mongoose";
 
 import { configs } from "./configs";
+import { runAllCronJobs } from "./crons";
 import { ApiError } from "./errors";
 import { adminRouter, authRouter, userRouter } from "./routers";
-import {runAllCronJobs} from "./crons";
+import { initSwagger } from "./swagger";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+/**
+ * @swagger
+ * tags:
+ *   name: Admins
+ *   description: Admin operations
+ */
 app.use("/admins", adminRouter);
+/**
+ * @swagger
+ * tags:
+ *   name: Users
+ *   description: User operations
+ */
+
 app.use("/users", userRouter);
+/**
+ * @swagger
+ * tags:
+ *   name: Authentication
+ *   description: Authentication operations
+ */
 app.use("/auth", authRouter);
+initSwagger(app);
 
 app.use((err: ApiError, req: Request, res: Response, next: NextFunction) => {
   const status = err.status || 500;
