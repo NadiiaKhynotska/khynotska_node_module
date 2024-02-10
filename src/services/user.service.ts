@@ -30,7 +30,10 @@ class UserService {
     await userRepository.deleteById(userId);
   }
 
-  public async uploadAvatar(userId: string, avatar: UploadedFile): Promise<void> {
+  public async uploadAvatar(
+    userId: string,
+    avatar: UploadedFile,
+  ): Promise<void> {
     await userRepository.deleteById(userId);
   }
 }

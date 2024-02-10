@@ -39,6 +39,9 @@ router.delete(
   userController.deleteById,
 );
 
-router.post("/avatar", fileMiddleware.isAvatarValid,authMiddleware.checkToken(EToken.AccessToken),userController.uploadAvatar);
+
+
+
+router.post("/avatar",  fileMiddleware.isAvatarValid,authMiddleware.checkToken(EToken.AccessToken),userController.uploadAvatar);
 
 export const userRouter = router;
