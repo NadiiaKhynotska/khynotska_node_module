@@ -3,3 +3,4 @@ export * from "./city.enum";
 export * from "./token.enum";
 export * from "./email.action.enum";
 export * from "./role.enum";
+export * from "./file.enum";

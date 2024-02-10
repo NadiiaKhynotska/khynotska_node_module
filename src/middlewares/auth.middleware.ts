@@ -29,6 +29,10 @@ class AuthMiddleware {
           _id: entity._userId,
         });
 
+        if (!user) {
+          throw new ApiError("User not found", 400);
+        }
+
         const jwtPayload = tokenService.checkToken(token, tokenType, user.role);
 
         req.res.locals.jwtPayload = jwtPayload;
@@ -66,6 +70,10 @@ class AuthMiddleware {
         const user = await userRepository.getOneByParams({
           _id: entity._userId,
         });
+
+        if (!user) {
+          throw new ApiError("User not found", 400);
+        }
 
         const jwtPayload = tokenService.checkToken(
           actionToken,

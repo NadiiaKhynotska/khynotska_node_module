@@ -1,17 +1,21 @@
+import { UploadedFile } from "express-fileupload";
+
+import { EFileType, ERoles } from "../enums";
 import { userRepository } from "../repositories";
 import { IPaginationResponse, IQuery, IUser } from "../types";
-import {UploadedFile} from "express-fileupload";
+import { s3Service } from "./s3.service";
 
 class UserService {
   public async getAllWithPagination(
     query: IQuery,
+    role: ERoles,
   ): Promise<IPaginationResponse<IUser>> {
     const queryString = JSON.stringify(query);
     const queryObj = JSON.parse(
       queryString.replace(/\b(gte|lte|gt|lt)\b/, (match) => `$${match}`),
     );
 
-    return await userRepository.getAllWithPagination(queryObj);
+    return await userRepository.getAllWithPagination(queryObj, role);
   }
 
   public async create(dto: IUser): Promise<IUser> {
@@ -34,7 +38,22 @@ class UserService {
     userId: string,
     avatar: UploadedFile,
   ): Promise<void> {
-    await userRepository.deleteById(userId);
+    const user = await userRepository.getOneByParams({ _id: userId });
+    if (user.avatar) {
+      await s3Service.deleteFile(user.avatar);
+    }
+
+    const filePath = await s3Service.uploadFile(userId, avatar, EFileType.User);
+    await userRepository.updateById(userId, { avatar: filePath });
+  }
+
+  public async deleteAvatar(userId: string): Promise<void> {
+    const user = await userRepository.getOneByParams({ _id: userId });
+    if (user.avatar) {
+      await s3Service.deleteFile(user.avatar);
+    }
+
+    await userRepository.updateById(userId, { avatar: null });
   }
 }
 

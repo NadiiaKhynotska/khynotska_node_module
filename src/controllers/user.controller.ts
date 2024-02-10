@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { UploadedFile } from "express-fileupload";
 
-import { ERoles } from "../enums";
 import { UserPresenter } from "../presenters";
 import { userService } from "../services";
 import { IQuery, ITokenPayload, IUser } from "../types";
@@ -13,17 +12,15 @@ class UserController {
     next: NextFunction,
   ): Promise<Response<IUser[]>> {
     try {
+      const { role } = req.res.locals.jwtPayload as ITokenPayload;
       const paginatedUsers = await userService.getAllWithPagination(
         req.query as IQuery,
-      );
-
-      const allowedUsers = paginatedUsers.data.filter(
-        (user) => user.role === ERoles.USER,
+        role,
       );
 
       return res.json({
         ...paginatedUsers,
-        data: UserPresenter.usersToResponse(allowedUsers),
+        data: UserPresenter.usersToResponse(paginatedUsers.data),
       });
     } catch (e) {
       next(e);
@@ -61,6 +58,17 @@ class UserController {
     try {
       const { userId } = req.res.locals.jwtPayload as ITokenPayload;
       await userService.uploadAvatar(userId, req.files.avatar as UploadedFile);
+      res.json("OK");
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  public async deleteAvatar(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId } = req.res.locals.jwtPayload as ITokenPayload;
+      await userService.deleteAvatar(userId);
+      res.json("OK");
     } catch (e) {
       next(e);
     }

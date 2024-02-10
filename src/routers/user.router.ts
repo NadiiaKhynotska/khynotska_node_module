@@ -1,11 +1,12 @@
 import { Router } from "express";
 
 import { userController } from "../controllers";
-import { EToken } from "../enums";
+import { ERoles, EToken } from "../enums";
 import {
   authMiddleware,
   commonMiddleware,
   fileMiddleware,
+  userMiddleware,
 } from "../middlewares";
 import { UserValidator } from "../validators";
 
@@ -18,7 +19,12 @@ const router = Router();
  * @returns {Error} 500 - Помилка сервера
  */
 
-router.get("", userController.getAllWithPagination);
+router.get(
+  "",
+  authMiddleware.checkToken(EToken.AccessToken),
+  userMiddleware.haveAccessByRole(ERoles.USER),
+  userController.getAllWithPagination,
+);
 
 router.get(
   "/:userId",
@@ -34,6 +40,11 @@ router.put(
   commonMiddleware.isUserExist("_id"),
   commonMiddleware.isBodyValid(UserValidator.update),
   userController.updateById,
+);
+router.delete(
+  "/avatar",
+  authMiddleware.checkToken(EToken.AccessToken),
+  userController.deleteAvatar,
 );
 
 router.delete(

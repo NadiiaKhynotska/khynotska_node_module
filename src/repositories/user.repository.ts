@@ -1,31 +1,35 @@
 import { FilterQuery } from "mongoose";
 
+import { ERoles } from "../enums";
 import { User } from "../models";
 import { IPaginationResponse, IQuery, IUser } from "../types";
 
 class UserRepository {
   public async getAllWithPagination(
     query: IQuery,
+    role: ERoles,
   ): Promise<IPaginationResponse<IUser>> {
     const {
       page = 1,
-      sortedBy = "createdAt",
       limit = 10,
-      ...searchObj
+      sortedBy = "createdAt",
+      ...searchObject
     } = query;
 
-    const skip = Number(limit) * (Number(page) - 1);
+    const skip = +limit * (+page - 1);
 
-    const users = await User.find(searchObj)
+    const users = await User.find({ ...searchObject, role })
       .sort(sortedBy)
-      .limit(Number(limit))
+      .limit(limit)
       .skip(skip);
 
-    const itemsFound = await User.countDocuments(searchObj);
-
+    const itemsFound = await User.countDocuments({
+      ...searchObject,
+      role,
+    });
     return {
-      page: Number(page),
-      limit: Number(limit),
+      page: +page,
+      limit: +limit,
       itemsFound,
       data: users,
     };
