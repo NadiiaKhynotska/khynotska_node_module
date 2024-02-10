@@ -6,7 +6,6 @@ import { UserPresenter } from "../presenters";
 import { userService } from "../services";
 import { IQuery, ITokenPayload, IUser } from "../types";
 
-
 class UserController {
   public async getAllWithPagination(
     req: Request,
