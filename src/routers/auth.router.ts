@@ -1,9 +1,9 @@
-import { Router } from "express";
+import {Router} from "express";
 
-import { authController } from "../controllers";
-import { EToken } from "../enums";
-import { authMiddleware, commonMiddleware } from "../middlewares";
-import { UserValidator } from "../validators";
+import {authController} from "../controllers";
+import {EToken} from "../enums";
+import {authMiddleware, commonMiddleware} from "../middlewares";
+import {UserValidator} from "../validators";
 
 const router = Router();
 
@@ -54,5 +54,7 @@ router.put(
   authMiddleware.checkToken(EToken.AccessToken),
   authController.changePassword,
 );
+
+
 
 export const authRouter = router;

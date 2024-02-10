@@ -1,5 +1,6 @@
 import { userRepository } from "../repositories";
 import { IPaginationResponse, IQuery, IUser } from "../types";
+import {UploadedFile} from "express-fileupload";
 
 class UserService {
   public async getAllWithPagination(
@@ -26,6 +27,10 @@ class UserService {
   }
 
   public async deleteById(userId: string): Promise<void> {
+    await userRepository.deleteById(userId);
+  }
+
+  public async uploadAvatar(userId: string, avatar: UploadedFile): Promise<void> {
     await userRepository.deleteById(userId);
   }
 }

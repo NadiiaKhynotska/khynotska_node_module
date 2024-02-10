@@ -1,5 +1,6 @@
 import express, { NextFunction, Request, Response } from "express";
 import * as mongoose from "mongoose";
+import fileUpload from "express-fileupload"
 
 import { configs } from "./configs";
 import { runAllCronJobs } from "./crons";
@@ -10,6 +11,7 @@ import { initSwagger } from "./swagger";
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(fileUpload())
 /**
  * @swagger
  * tags:
@@ -23,7 +25,6 @@ app.use("/admins", adminRouter);
  *   name: Users
  *   description: User operations
  */
-
 app.use("/users", userRouter);
 /**
  * @swagger

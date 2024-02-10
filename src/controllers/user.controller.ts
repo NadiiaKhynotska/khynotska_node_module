@@ -3,7 +3,8 @@ import { NextFunction, Request, Response } from "express";
 import { ERoles } from "../enums";
 import { UserPresenter } from "../presenters";
 import { userService } from "../services";
-import { IQuery, IUser } from "../types";
+import {IQuery, ITokenPayload, IUser} from "../types";
+import {UploadedFile} from "express-fileupload";
 
 class UserController {
   public async getAllWithPagination(
@@ -51,6 +52,16 @@ class UserController {
     try {
       await userService.deleteById(req.params.userId);
       res.sendStatus(204);
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  public async uploadAvatar(req: Request, res: Response, next: NextFunction) {
+    try {
+
+      const {userId}= req.res.locals.jwtPayload as ITokenPayload
+        await userService.uploadAvatar(userId, req.files.avatar as UploadedFile)
     } catch (e) {
       next(e);
     }

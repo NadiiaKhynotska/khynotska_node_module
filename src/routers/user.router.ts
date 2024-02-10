@@ -2,7 +2,7 @@ import { Router } from "express";
 
 import { userController } from "../controllers";
 import { EToken } from "../enums";
-import { authMiddleware, commonMiddleware } from "../middlewares";
+import {authMiddleware, commonMiddleware, fileMiddleware} from "../middlewares";
 import { UserValidator } from "../validators";
 
 const router = Router();
@@ -38,5 +38,7 @@ router.delete(
   commonMiddleware.isUserExist("_id"),
   userController.deleteById,
 );
+
+router.post("/avatar", fileMiddleware.isAvatarValid,authMiddleware.checkToken(EToken.AccessToken),userController.uploadAvatar);
 
 export const userRouter = router;
